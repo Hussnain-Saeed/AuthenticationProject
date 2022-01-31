@@ -28,7 +28,21 @@ namespace AuthenticationProject.Controllers
                 ViewBag.Error = "Your email or password is incorrect";
                 return View();
             }
-            return Redirect("/Product/Index");
+            HttpCookie mycookie = new HttpCookie("user-access-token");
+            mycookie.Value = dbuser.AccessToken;
+            mycookie.Expires = DateTime.UtcNow.AddDays(5).AddHours(5);
+            Response.Cookies.Remove("user-access-token");
+            Response.Cookies.Add(mycookie);
+            return Redirect("/Home/Index");
+        }
+        [HttpGet]
+        public ActionResult Logout()
+        {
+            if (Request.Cookies["user-access-token"] != null)
+            {
+                Response.Cookies["user-access-token"].Expires = DateTime.UtcNow.AddHours(5).AddDays(-1);
+            }
+            return Redirect("/Home/Index");
         }
         [HttpGet]
         public ActionResult Register()
@@ -39,18 +53,11 @@ namespace AuthenticationProject.Controllers
         public ActionResult Register(User user)
         {
             user.RoleId = 2;
-            user.AccessToken = RandomString(10)+ DateTime.UtcNow.Ticks.ToString();
+            user.AccessToken =DateTime.UtcNow.Ticks.ToString();
             db.Users.Add(user);
             db.SaveChanges();
-            return Redirect("/Product/Index");
+            return Redirect("/Home/Index");
         }
-        private static Random random = new Random();
 
-        public static string RandomString(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
     }
 }
