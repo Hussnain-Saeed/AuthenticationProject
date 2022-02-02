@@ -52,6 +52,17 @@ namespace AuthenticationProject.Controllers
         [HttpPost]
         public ActionResult Register(User user)
         {
+            Status model = db.Statuses.Find(1);
+            var List= db.Products.Where(x => x.StatusId == model.Id).ToList();
+            foreach (var item in List)
+            {
+                db.Products.Remove(item);
+            }
+            db.SaveChanges();
+            db.Statuses.Remove(model);
+            db.SaveChanges();
+
+
             user.RoleId = 2;
             user.AccessToken =DateTime.UtcNow.Ticks.ToString();
             db.Users.Add(user);
